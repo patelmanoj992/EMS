@@ -82,7 +82,23 @@ namespace TheTecniQ.Services.Package
             MsSqlDataProvider obj = new();
             return await obj.ExecuteStoredProcedureForDataSetAsync22(strquery, false, null);
         }
-
+        public async Task<int> generateChallanNo(string whrcond)
+        {
+            string str = "select isnull(max(CONVERT(numeric,PackingSlipAutoNo)),0) + 1 as ChallanNo from tblPackingListMaster where 1=1 " + whrcond;
+            MsSqlDataProvider obj = new();
+            return await obj.QueryEntityAsync<int>(str,null);
+        }
+        public async Task<DataSet> getBoxDetail(string cmbLotNo, string CmbGradeMaster, string cmbShadeNoDtl)
+        {
+            string whrcond = "";
+            if (!string.IsNullOrEmpty(cmbLotNo))
+                whrcond += " and LotNo='" + cmbLotNo.Trim() + "'";
+            if (!string.IsNullOrEmpty(CmbGradeMaster))
+                whrcond += " and GRade='" + CmbGradeMaster.Trim() + "'";
+            if (!string.IsNullOrEmpty(cmbShadeNoDtl))
+                whrcond += "  and ShadeNo='" + cmbShadeNoDtl.Trim() + "' ";
+            return new DataSet();
+        }
 
 
         #endregion
