@@ -13,5 +13,6 @@ namespace TheTecniQ.Services.Package
         Task<DataSet> FillLotNo(string whrcnd, int itemId);
         Task<DataSet> FillQualitySerachGrid(string whrcnd, int divisionId);
         Task<DataSet> FillSHADE(string whrcnd, int itemId);
+        Task<int> generateChallanNo(string whrcond);
     }
 }

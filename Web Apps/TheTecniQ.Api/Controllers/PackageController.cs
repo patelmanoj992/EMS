@@ -20,6 +20,14 @@ namespace TheTecniQ.Api.Controllers
     {
         private readonly IPackageServices _packageServices = packageServices;
 
+        [HttpGet("generate-challanno")]
+        public async Task<ApiResponse> generateChallanNo(int divisionid, string src = null)
+        {
+           var dataSet = await _packageServices.generateChallanNo("");
+           return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status200OK, "Record found.", new { ChallanNo = dataSet });
+        }
+
+
         [HttpGet("get-qulity/{divisionid}")]
         public async Task<ApiResponse> GetQuality(int divisionid, string src = null)
         {
