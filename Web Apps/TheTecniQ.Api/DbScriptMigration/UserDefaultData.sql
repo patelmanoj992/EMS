@@ -70,15 +70,20 @@ IF NOT EXISTS (SELECT 1 FROM [EMS_Page] WHERE PageName='Expense')
     INSERT [dbo].[EMS_Page] ( [ModuleId], [PageName], [PageCode], [IsShowMenu], [IsShowSearch], [TableNames], [IsActive]) 
     VALUES ( (SELECT Id FROM EMS_Module WHERE ModuleName='Report'), 'Expense','ExpenseRpt',1,1,'Report',1)
 
-IF NOT EXISTS (SELECT 1 FROM [EMS_Page] WHERE PageName='DivisionWise')
+DELETE FROM [dbo].[EMS_Page] WHERE PageName IN ('DivisionWise','DepartmentWise','DesignationWise')
+
+IF NOT EXISTS (SELECT 1 FROM [EMS_Page] WHERE PageName='MonthwiseSummaryRpt')
     INSERT [dbo].[EMS_Page] ( [ModuleId], [PageName], [PageCode], [IsShowMenu], [IsShowSearch], [TableNames], [IsActive]) 
-    VALUES ( (SELECT Id FROM EMS_Module WHERE ModuleName='Report'), 'DivisionWise','DivisionWiseRpt',1,1,'Report',1)
-IF NOT EXISTS (SELECT 1 FROM [EMS_Page] WHERE PageName='DepartmentWise')
+    VALUES ( (SELECT Id FROM EMS_Module WHERE ModuleName='Report'), 'Monthwise Summary','MonthwiseSummaryRpt',1,1,'Report',1)
+IF NOT EXISTS (SELECT 1 FROM [EMS_Page] WHERE PageName='DivisionWiseSummaryRpt')
     INSERT [dbo].[EMS_Page] ( [ModuleId], [PageName], [PageCode], [IsShowMenu], [IsShowSearch], [TableNames], [IsActive]) 
-    VALUES ( (SELECT Id FROM EMS_Module WHERE ModuleName='Report'), 'DepartmentWise','DepartmentWiseRpt',1,1,'Report',1)
-IF NOT EXISTS (SELECT 1 FROM [EMS_Page] WHERE PageName='DesignationWise')
+    VALUES ( (SELECT Id FROM EMS_Module WHERE ModuleName='Report'), 'Divisionwise Summary','DivisionWiseSummaryRpt',1,1,'Report',1)
+IF NOT EXISTS (SELECT 1 FROM [EMS_Page] WHERE PageName='DepartmentWiseSummaryRpt')
     INSERT [dbo].[EMS_Page] ( [ModuleId], [PageName], [PageCode], [IsShowMenu], [IsShowSearch], [TableNames], [IsActive]) 
-    VALUES ( (SELECT Id FROM EMS_Module WHERE ModuleName='Report'), 'DesignationWise','DesignationWiseRpt',1,1,'Report',1)
+    VALUES ( (SELECT Id FROM EMS_Module WHERE ModuleName='Report'), 'Departmentwise Summary','DepartmentWiseSummaryRpt',1,1,'Report',1)
+IF NOT EXISTS (SELECT 1 FROM [EMS_Page] WHERE PageName='DesignationWiseSummaryRpt')
+    INSERT [dbo].[EMS_Page] ( [ModuleId], [PageName], [PageCode], [IsShowMenu], [IsShowSearch], [TableNames], [IsActive]) 
+    VALUES ( (SELECT Id FROM EMS_Module WHERE ModuleName='Report'), 'Designationwise Summary','DesignationWiseSummaryRpt',1,1,'Report',1)
 
     TRUNCATE TABLE EMS_Permission
     ------------ Permission data -------------------

@@ -2,7 +2,7 @@ using TheTecniQ.Data.Migrations;
 
 namespace TheTecniQ.Data.Migration
 {
-    [MigrationInfo("2025-05-16 17:55:00", "Add Model")]
+    [MigrationInfo("2025-05-22 17:55:00", "Add Model")]
     public class StoreProcedureMigration : FluentMigrator.Migration
     {
         public override void Up()

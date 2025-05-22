@@ -117,6 +117,11 @@ static apiDashboardMaster = "Dashboard/get-total-summary";
    static apiExpenseReportsList = "Reports/KharchiRpt";
    static apiGetVoucherList = "Reports/get-voucher/";
    
+   //Summary Report
+   static apiGetMonthwiseSummaryRpt = "Reports/get-monthwise-summary-rpt/";
+   static apiGetDivisionWiseSummaryRpt = "Reports/get-divisionwise-summary-rpt/";
+   static apiGetDepartmentwiseSummaryRpt = "Reports/get-departmentwise-summary-rpt/";
+   static apiGetDesignationWiseSummaryRpt = "Reports/get-designationwise-summary-rpt/";
  //#endregion
 
   //Order History

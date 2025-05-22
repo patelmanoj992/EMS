@@ -325,7 +325,7 @@ const routes: Array<RouteRecordRaw> = [
               MainPage:'Report',
               TabName:'report',              
               ModuleName: ['Report'] ,
-              PageCode:['DivisionWiseRpt']
+              PageCode:['DivisionWiseSummaryRpt']
             },
           },
           {
@@ -339,7 +339,7 @@ const routes: Array<RouteRecordRaw> = [
               MainPage:'Report',
               TabName:'report',              
               ModuleName: ['Report'] ,
-              PageCode:['DepartmentWiseRpt']
+              PageCode:['DepartmentWiseSummaryRpt']
             },
           },
           {
@@ -353,7 +353,21 @@ const routes: Array<RouteRecordRaw> = [
               MainPage:'Report',
               TabName:'report',              
               ModuleName: ['Report'] ,
-              PageCode:['DesignationWiseRpt']
+              PageCode:['DesignationWiseSummaryRpt']
+            },
+          },
+          {
+            path: "/report/monthwise-summary",
+            name: "MonthwiseSummaryRptList",
+            component: () => import("@/views/frontEnd/report/summaryReport/monthWise-summaryRpt.vue"),
+            meta: {
+              title: "",
+              name: "MonthwiseSummaryRptList",
+              requiresAuth: true,
+              MainPage:'Report',
+              TabName:'report',              
+              ModuleName: ['Report'] ,
+              PageCode:['MonthwiseSummaryRpt']
             },
           },
           {

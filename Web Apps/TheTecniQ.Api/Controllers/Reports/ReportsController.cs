@@ -41,10 +41,52 @@ namespace TheTecniQ.Api.Controllers.Reports
         private readonly IEMS_tblEmployeeExpenseService _ieMS_TblEmployeeExpenseService = eMS_TblEmployeeExpenseService;
         private readonly ICommonService<EMS_tblEmployeeAttendance> _tblEmployeeAttendanceService = tblEmployeeAttendanceService;
 
+
         [HttpPost]
         [Route("[action]")]
-        [Permission(Page = (PageName.RptMonthwise) , Permission = PagePermission.View)]
+        [Permission(Page = (PageName.RptMonthwise), Permission = PagePermission.View)]
         public async Task<IActionResult> List(GridRequestModel objGrid)
+        {
+
+            var List = await _iemployeeAttendanceService.GetAllAsync_Rpt(objGrid);
+
+            if (List != null && List.Count > 0)
+            {
+                int index = 1;
+                foreach (var item in List)
+                {
+                    item.SrNo = index++;
+                }
+            }
+            if (objGrid.ResponseType == EnumResponseType.JSON)
+            {
+                return Ok(new ApiResponse { StatusCode = (int)ApiStatusCode.Status200OK, Data = List });
+            }
+            else
+            {
+                if (List != null && List.Count > 0)
+                {
+                    List.Add(new EMS_tblEmployeeAttendance()
+                    {
+                        EmployeeName = "Total",
+                        TotalAmount = List.Sum(x => x.TotalAmount ?? 0),
+                        TotalExpenseAmount = List.Sum(x => x.TotalExpenseAmount ?? 0),
+                        TotalExtraAmount = List.Sum(x => x.TotalExtraAmount ?? 0),
+                        PayableAmount = List.Sum(x => x.PayableAmount ?? 0),
+                        VoucherNo = null
+                    }); ;
+
+                }
+                objGrid.Filename = "MonthwiseRpt";
+                IPagedList<EMS_tblEmployeeAttendance> data = new PagedList<EMS_tblEmployeeAttendance>(List, 0, 0, 0);
+                return Ok(data.ToListResponse(objGrid, "Monthwise Report", "MonthwiseRpt"));
+            }
+        }
+
+        [HttpPost("get-monthwise-summary-rpt")]
+        //[Route("[action]")]
+        [Permission(Page = (PageName.RptMonthwiseSummaryRpt) , Permission = PagePermission.View)]
+        public async Task<IActionResult> MonthwiseSummaryRpt(GridRequestModel objGrid)
         {
 
             var list = await _iemployeeAttendanceService.GetAllDataAsync_Rpt(objGrid);
@@ -83,10 +125,10 @@ namespace TheTecniQ.Api.Controllers.Reports
             }
         }
 
-        [HttpPost]
-        [Route("[action]")]
-        [Permission(Page = (PageName.RptDivisionWise), Permission = PagePermission.View)]
-        public async Task<IActionResult> DivisionWiseList(GridRequestModel objGrid)
+        [HttpPost("get-divisionwise-summary-rpt")]
+        //[Route("[action]")]
+        [Permission(Page = (PageName.RptDivisionWiseSummaryRpt), Permission = PagePermission.View)]
+        public async Task<IActionResult> DivisionWiseSummaryRpt(GridRequestModel objGrid)
         {
 
             var List = await _iemployeeAttendanceService.GetAllAsync_Rpt(objGrid);
@@ -125,10 +167,10 @@ namespace TheTecniQ.Api.Controllers.Reports
             }
         }
 
-        [HttpPost]
-        [Route("[action]")]
-        [Permission(Page = (PageName.RptDepartmentWise), Permission = PagePermission.View)]
-        public async Task<IActionResult> DepartmentWiseList(GridRequestModel objGrid)
+        [HttpPost("get-departmentwise-summary-rpt")]
+        //[Route("[action]")]
+        [Permission(Page = (PageName.RptDepartmentWiseSummaryRpt), Permission = PagePermission.View)]
+        public async Task<IActionResult> DepartmentWiseSummaryRpt(GridRequestModel objGrid)
         {
 
             var list = await _iemployeeAttendanceService.GetAllDataAsync_Rpt(objGrid);
@@ -209,10 +251,10 @@ namespace TheTecniQ.Api.Controllers.Reports
 
         }
 
-        [HttpPost]
-        [Route("[action]")]
-        [Permission(Page = (PageName.RptDesignationWise), Permission = PagePermission.View)]
-        public async Task<IActionResult> DesignationWiseList(GridRequestModel objGrid)
+        [HttpPost("get-designationwise-summary-rpt")]
+        //[Route("[action]")]
+        [Permission(Page = (PageName.RptDesignationWiseSummaryRpt), Permission = PagePermission.View)]
+        public async Task<IActionResult> DesignationWiseSummaryRpt(GridRequestModel objGrid)
         {
 
             var list = await _iemployeeAttendanceService.GetAllDataAsync_Rpt(objGrid);

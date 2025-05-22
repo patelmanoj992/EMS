@@ -12,9 +12,10 @@
         public const string MstActivation = "Activation";
         public const string MstAttendance = "Attendance";
         public const string RptMonthwise = "MonthwiseRpt";
-        public const string RptDivisionWise = "DivisionWiseRpt";
-        public const string RptDepartmentWise = "DepartmentWiseRpt";
-        public const string RptDesignationWise = "DesignationWiseRpt";        
+        public const string RptMonthwiseSummaryRpt = "MonthwiseSummaryRpt";
+        public const string RptDivisionWiseSummaryRpt = "DivisionWiseSummaryRpt";
+        public const string RptDepartmentWiseSummaryRpt = "DepartmentWiseSummaryRpt";
+        public const string RptDesignationWiseSummaryRpt = "DesignationWiseSummaryRpt";        
         public const string RptExpenseRpt = "ExpenseRpt";
 
         public const string Orders = "Orders";

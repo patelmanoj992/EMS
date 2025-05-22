@@ -16,24 +16,30 @@
                         </a>
                     </router-link>
                 </li>
-                <li class="nav-item" role="presentation" v-if="AuthService.CheckPermissionsPageWise(moduleName, 'DivisionWiseRpt')">
+                <li class="nav-item" role="presentation" v-if="AuthService.CheckPermissionsPageWise(moduleName, 'MonthwiseSummaryRpt')">
+                    <router-link to="/report/monthwise-summary" custom v-slot="{ href, route, navigate }">
+                        <a :class="masterRoute.meta.name == route.name || masterRoute.meta.parentNode == route.name ? ActiveClass : InActiveClass" :href="href" @click="navigate">
+                            <i class="fas fa-store"></i> Monthwise summary                   </a>
+                    </router-link>
+                </li>
+                <!-- <li class="nav-item" role="presentation" v-if="AuthService.CheckPermissionsPageWise(moduleName, 'DivisionWiseSummaryRpt')">
                     <router-link to="/report/division-summary" custom v-slot="{ href, route, navigate }">
                         <a :class="masterRoute.meta.name == route.name || masterRoute.meta.parentNode == route.name ? ActiveClass : InActiveClass" :href="href" @click="navigate">
                             <i class="fas fa-store"></i> DivisionWise                   </a>
                     </router-link>
-                </li>
-                <li class="nav-item" role="presentation" v-if="AuthService.CheckPermissionsPageWise(moduleName, 'DepartmentWiseRpt')">
+                </li> -->
+                <li class="nav-item" role="presentation" v-if="AuthService.CheckPermissionsPageWise(moduleName, 'DepartmentWiseSummaryRpt')">
                     <router-link to="/report/department-summary" custom v-slot="{ href, route, navigate }">
                         <a :class="masterRoute.meta.name == route.name || masterRoute.meta.parentNode == route.name ? ActiveClass : InActiveClass" :href="href" @click="navigate">
-                            <i class="fas fa-store"></i> DepartmentWise                   </a>
+                            <i class="fas fa-store"></i> Department summary                </a>
                     </router-link>
                 </li>
-                <li class="nav-item" role="presentation" v-if="AuthService.CheckPermissionsPageWise(moduleName, 'DesignationWiseRpt')">
+                <!-- <li class="nav-item" role="presentation" v-if="AuthService.CheckPermissionsPageWise(moduleName, 'DesignationWiseSummaryRpt')">
                     <router-link to="/report/designation-summary" custom v-slot="{ href, route, navigate }">
                         <a :class="masterRoute.meta.name == route.name || masterRoute.meta.parentNode == route.name ? ActiveClass : InActiveClass" :href="href" @click="navigate">
                             <i class="fas fa-store"></i> DesignationWise                     </a>
                     </router-link>
-                </li>     
+                </li>      -->
                 <!-- <li class="nav-item" role="presentation">
                     <router-link to="/orders/order-report" custom v-slot="{ href, route, navigate }">
                         <a :class="masterRoute.meta.name == route.name || masterRoute.meta.parentNode == route.name ? ActiveClass : InActiveClass" :href="href" @click="navigate">

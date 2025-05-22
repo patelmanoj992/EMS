@@ -115,7 +115,7 @@
             IsShow: AuthService.CheckPermissionsModuleWise('Attendance')
         } ,{
             label: "Report",
-            to: AuthService.getMultipleModulePagePath(['Report'],['MonthwiseRpt','ExpenseRpt','DivisionWiseRpt','DepartmentWiseRpt','DesignationWiseRpt'],'MonthwiseRpt', 'report'),
+            to: AuthService.getMultipleModulePagePath(['Report'],['MonthwiseRpt','ExpenseRpt','MonthwiseSummaryRpt','DivisionWiseSummaryRpt','DepartmentWiseSummaryRpt','DesignationWiseSummaryRpt'],'MonthwiseRpt', 'report'),
             icon: "pi-th-large",
             IsFrontMenu: true,
             IsShow: AuthService.CheckPermissionsModuleWise('Report')
