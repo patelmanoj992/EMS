@@ -139,9 +139,42 @@ namespace TheTecniQ.Services.Attendance
 
         public async Task<IList<EMS_tblEmployeeAttendance>> GetAllDataAsync_Rpt(GridRequestModel objGrid)
         {
-            IQueryable<EMS_tblEmployeeAttendance> query = from u in _EmployeeAttendanceRepository.Table select u;
+
+            MsSqlDataProvider objSql = new();
+            List<int> employeeId = null;
+            var findEnrollFil = objGrid.Filters.Where(x => x.FieldName == "EnrollNo").FirstOrDefault();
+            if (!string.IsNullOrEmpty(findEnrollFil?.FieldValue))
+            {
+                var employee = await objSql.QueryAsync<tblEmployee>(@"select EmployeeID from tblEmployee Where EnrollNo IN (" + findEnrollFil?.FieldValue.Trim() + ") ", null);
+                if (employee != null && employee.Count > 0)
+                {
+                    employeeId = new List<int>();
+                    foreach (var item in employee)
+                    {
+                        employeeId.Add(item.EmployeeID);
+                    }
+                }
+                else
+                {
+                    employeeId = new List<int>();
+                    employeeId.Add(0);
+                }
+                objGrid.Filters.Remove(findEnrollFil);
+            }
+            IQueryable<EMS_tblEmployeeAttendance> query = from u in _EmployeeAttendanceRepository.Table
+                                                          where (employeeId == null || employeeId.Contains(u.EmployeeID))
+                                                          select u;
+           // objSql = new();
             var data = await _EmployeeAttendanceRepository.GetAllAsync(query => query);
-            return data;
+            List<int> employeeIDs = data? .Where(x => x.EmployeeID != 0).Select(x => x.EmployeeID).Distinct().ToList();
+            if (employeeIDs != null && employeeIDs.Count > 0)
+            {
+                query = query.Where(x => employeeIDs.Contains(x.EmployeeID));
+            }
+
+            var result = await query.ToListAsync();
+            return result;
+
         }
 
         //public async Task<IList<EMS_tblEmployeeAttendance>> GetAllAsync_Rpt(GridRequestModel objGrid)
