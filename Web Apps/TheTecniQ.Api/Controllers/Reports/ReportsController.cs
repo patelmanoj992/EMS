@@ -131,39 +131,80 @@ namespace TheTecniQ.Api.Controllers.Reports
         public async Task<IActionResult> DivisionWiseSummaryRpt(GridRequestModel objGrid)
         {
 
-            var List = await _iemployeeAttendanceService.GetAllAsync_Rpt(objGrid);
+            var list = await _iemployeeAttendanceService.GetAllDataAsync_Rpt(objGrid);
 
-            if (List != null && List.Count > 0)
+            var monthWiseDivisionSummary = new List<dynamic>();
+
+            if (list != null && list.Count > 0)
             {
-                int index = 1;
-                foreach (var item in List)
+                var months = list
+                    .Where(x => x.AttendanceDate != null)
+                    .Select(x => x.AttendanceDate.ToString("MMM-yy"))
+                    .Distinct()
+                    .OrderBy(m => DateTime.ParseExact(m, "MMM-yy", null))
+                    .ToList();
+
+                // Get distinct Division
+                var Division = list
+                    .Where(x => !string.IsNullOrEmpty(x.DivisionName))
+                    .Select(x => x.DivisionName)
+                    .Distinct()
+                    .OrderBy(d => d)
+                    .ToList();
+
+                foreach (var div in Division)
                 {
-                    item.SrNo = index++;
+                    var row = new Dictionary<string, object>();
+                    row["Division"] = div;
+                    decimal grandTotal = 0;
+
+                    foreach (var month in months)
+                    {
+                        var total = list
+                            .Where(x => x.DivisionName == div &&
+                                        x.AttendanceDate.ToString("MMM-yy") == month)
+                            .Sum(x => x.TotalAmount ?? 0);
+
+                        row[month] = total;
+                        grandTotal += total;
+                    }
+
+                    row["GrandTotal"] = grandTotal;
+                    monthWiseDivisionSummary.Add(row);
                 }
+
+                // Add overall grand total row
+                var grandRow = new Dictionary<string, object>();
+                grandRow["Division"] = "Grand Total";
+                decimal grandTotalOverall = 0;
+
+                foreach (var month in months)
+                {
+                    var total = list
+                        .Where(x => x.AttendanceDate.ToString("MMM-yy") == month)
+                        .Sum(x => x.TotalAmount ?? 0);
+
+                    grandRow[month] = total;
+                    grandTotalOverall += total;
+                }
+
+                grandRow["GrandTotal"] = grandTotalOverall;
+                monthWiseDivisionSummary.Add(grandRow);
             }
+
             if (objGrid.ResponseType == EnumResponseType.JSON)
             {
-                return Ok(new ApiResponse { StatusCode = (int)ApiStatusCode.Status200OK, Data = List });
+                return Ok(new ApiResponse
+                {
+                    StatusCode = (int)ApiStatusCode.Status200OK,
+                    Data = monthWiseDivisionSummary
+                });
             }
             else
             {
-                if (List != null && List.Count > 0)
-                {
-                    List.Add(new EMS_tblEmployeeAttendance()
-                    {
-                        EmployeeName = "Total",
-                        TotalAmount = List.Sum(x => x.TotalAmount ?? 0),
-                        TotalExpenseAmount = List.Sum(x => x.TotalExpenseAmount ?? 0),
-                        TotalExtraAmount = List.Sum(x => x.TotalExtraAmount ?? 0),
-                        PayableAmount = List.Sum(x => x.PayableAmount ?? 0),
-                        VoucherNo = null
-                    }); ;
-                    objGrid.PreConcateData = "Division: " + List.Select(x => x.DivisionName).FirstOrDefault();
-                }
-                objGrid.Filename = "DivisionWiseRpt123";
-                
-                IPagedList<EMS_tblEmployeeAttendance> data = new PagedList<EMS_tblEmployeeAttendance>(List, 0, 0, 0);
-                return Ok(data.ToListResponse(objGrid, "Division Report", "DivisionWiseRpt"));
+                objGrid.Filename = "MonthwiseDivisionSummary";
+                IPagedList<dynamic> data = new PagedList<dynamic>(monthWiseDivisionSummary, 0, 0, 0);
+                return Ok(data.ToListResponse(objGrid, "Division Summary Report", "MonthwiseDivisionSummary"));
             }
         }
 
