@@ -1,5 +1,15 @@
 <template>
-  <div class="mt-5">
+  <div class="common__Table mt-5">
+    <div class="admin-actions-btn-wrapper mt-0 mb-0">
+            <div class="left-part">
+              <common-button class="btn p-button-aux mr-2" :label="'Export to Excel'"
+                v-show="resultData.length > 0"   @click="exportData(ExportType.Excel)"  />    
+            </div>
+            <div class="right-part">
+                            
+            </div>
+        </div>
+        <div class="custom-datatablewithoutwidth-wrapper table-responsive">
     <DataTable
       ref="dt"
       :value="resultData"
@@ -42,17 +52,18 @@
         </div>
       </template>
     </DataTable>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import commonModule from "@/composables/modules/commonModule";
+const { PatchData,PostData ,ExportData} = new commonModule();
 import UrlConstants from "@/utils/urlconstants";
+import { ExportType } from "@/models/controls/Grid/gridRequest";
 import GridConfig from "@/models/controls/Grid/gridConfig";
-
-const { PostData } = new commonModule();
-
+import moment from "moment";
 const dt = ref(null);
 const resultData = ref([]);
 const footerRow = ref<any>({});
@@ -98,5 +109,29 @@ const formatCell = (field: string) => {
 const formatFooter = (field: string) => {
   const value = footerRow.value[field];
   return typeof value === 'number' ? value.toLocaleString('en-IN') : value;
+};
+
+
+const exportData = (exportType: any) => {
+
+
+    let Postdata = {} as any
+    Postdata = JSON.parse(JSON.stringify({
+        ResponseType: exportType,
+        Columns: []
+    }));
+    if ((dt?.value?.columns?.length ?? 0) > 0) {
+        for (let i = 0; i < (dt?.value?.columns?.length ?? 0); i++) {
+            if (dt?.value?.columns[i]?.props.header != undefined)
+                Postdata.Columns.push({
+                    name: dt.value?.columns[i]?.props.header,
+                    data: dt.value?.columns[i]?.props.field,
+                })
+        }
+    }
+    
+    ExportData(UrlConstants.apiGetDepartmentwiseSummaryRpt,Postdata, ("Department_Summary_"+(moment(Date.now()).utcOffset(0, true).format("YY_MMM_DD_hhmmss A"))),"",(exportType == 1)?"xlsx":"pdf", (data: any) => {        
+                       // gridDataList.value = data;
+  });
 };
 </script>

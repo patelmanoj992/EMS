@@ -1,6 +1,6 @@
 <template>
-    <div class="mt-5">
-    <common-grid :config="gridConfig" ref="dt" :Ispaginator="false" :hideFilter="true" :filters="filters" :filename="filename" :AdvSearchBtnClass="'advance-search-filter-only-for-mobile mt-3'">
+    <div class="mt-5 rpt-grid">
+    <common-grid :config="gridConfig" ref="dt" :Ispaginator="false" :hideFilter="true" :filters="filters" :filename="filename" :AdvSearchBtnClass="'advance-search-filter-only-for-mobile mt-3 rpt-grid'">
         <template v-slot:basicfilter>
             
         </template>
@@ -11,7 +11,7 @@
          </template>
         <template v-slot:columns>
             
-            <Column field="SrNo" header="SrNo" class="text-center" :sortable="true"></Column> 
+            <!-- <Column field="SrNo" header="SrNo" class="text-center" :sortable="true"></Column>  -->
             <Column field="MonthYear" header="Month-Year" class="text-center" :sortable="true"></Column>   
             <Column field="TotalAmountSum" header="Total" class="text-center" :sortable="true"></Column>   
         </template>

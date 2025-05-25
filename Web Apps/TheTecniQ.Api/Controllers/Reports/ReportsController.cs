@@ -26,6 +26,8 @@ using TheTecniQ.Services.Common;
 using TheTecniQ.Services.Employees;
 using System.Collections.Generic;
 using TheTecniQ.Api.Models.RequestModel;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Drawing.Charts;
 
 namespace TheTecniQ.Api.Controllers.Reports
 {
@@ -95,18 +97,46 @@ namespace TheTecniQ.Api.Controllers.Reports
 
             if (list != null && list.Count > 0)
             {
+                var months = list
+                  .Where(x => x.AttendanceDate != null)
+                  .Select(x => x.AttendanceDate.ToString("MMM-yy"))
+                  .Distinct()
+                  .OrderBy(m => DateTime.ParseExact(m, "MMM-yy", null))
+                  .ToList();
+
                 var grouped = list
                     .Where(x => x.AttendanceDate != null)
-                    .GroupBy(x => x.AttendanceDate.ToString("MMM-yyyy"))
+                    .GroupBy(x => x.AttendanceDate.ToString("MMM-yy"))
                     .OrderBy(g => g.Min(x => x.AttendanceDate))
                     .Select((g, index) => new
                     {
-                        SrNo = index + 1,
+                       // SrNo = index + 1,
                         MonthYear = g.Key,
                         TotalAmountSum = g.Sum(x => x.TotalAmount ?? 0)
                     }).ToList<dynamic>();
 
                 monthWiseSummary = grouped;
+
+                // Add overall grand total row
+                
+                decimal grandTotalOverall = 0;
+
+                foreach (var month in months)
+                {
+                    var total = list
+                        .Where(x => x.AttendanceDate.ToString("MMM-yy") == month)
+                        .Sum(x => x.TotalAmount ?? 0);
+
+                    //grandRow[month] = total;
+                    grandTotalOverall += total;
+                }
+                
+                monthWiseSummary.Add(new
+                {
+                   // SrNo = monthWiseSummary.ToList().Count() + 1,
+                    MonthYear = "Grand Total",
+                    TotalAmountSum = grandTotalOverall
+                });
             }
 
             if (objGrid.ResponseType == EnumResponseType.JSON)

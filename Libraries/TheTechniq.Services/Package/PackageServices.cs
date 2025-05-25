@@ -60,8 +60,10 @@ namespace TheTecniQ.Services.Package
         }
         public async Task<DataSet> FillLotNo(string whrcnd, int itemId)
         {
-            whrcnd = (!string.IsNullOrEmpty(whrcnd) ? " and ItemID= " + itemId : "") + " order by  ItemDtlID desc ,Name ";
-            string query = "  select 1000000000000000 as ItemDtLID,'' as Name union select ItemDtlID,NAme  from tblitemdetail where 1=1 " + whrcnd;
+            string whrcndItem = ((itemId != null && itemId > 0) ? " and ItemID= " + itemId : "");
+            whrcnd = (!string.IsNullOrEmpty(whrcnd) ? "And NAme like '%" + whrcnd + "%'" : "");
+            whrcnd = whrcndItem + whrcnd + " order by  ItemDtlID desc ,Name ";
+            string query = "  select ItemDtlID,NAme  from tblitemdetail where 1=1 " + whrcnd;
 
             MsSqlDataProvider obj = new();
             return await obj.ExecuteStoredProcedureForDataSetAsync22(query, false, null);

@@ -314,15 +314,65 @@ namespace TheTecniQ.API.Infrastructure.Extensions
             //headerRow.Height = 30;
         }
 
+        //private static void PopulateRow<T>(IXLWorksheet workSheet, T item, List<Core.Domain.Grid.GridColumn> columns, GridRequestModel objGrid, int rowIndex)
+        //{
+        //    var propInfoList = item.GetType().GetProperties();
+        //    int colIndex = 1;
+        //    Type itemType = item.GetType();
+        //    bool isDictionary = typeof(IDictionary<string, object>).IsAssignableFrom(itemType);
+        //    if (isDictionary)
+        //    {
+        //        if (item is IDictionary<string, object> dict)
+        //        {
+        //            foreach (var column in columns)
+        //            {
+        //                if (dict.ContainsKey(column.Data))
+        //                {
+        //                    AddCellValue(workSheet, , column.Data, dict[column.Data], objGrid, rowIndex, colIndex++);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        foreach (var column in columns)
+        //        {
+        //            if (!column.Name.Equals("Action", StringComparison.OrdinalIgnoreCase) && propInfoList.Any(x => string.Equals(x.Name, column.Data, StringComparison.OrdinalIgnoreCase)))
+        //            {
+        //                var propInfo = propInfoList.FirstOrDefault(x => string.Equals(x.Name, column.Data, StringComparison.OrdinalIgnoreCase));
+        //                if (propInfo != null)
+        //                {
+        //                    AddCellValue(workSheet, propInfo, item, objGrid, rowIndex, colIndex++);
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
         private static void PopulateRow<T>(IXLWorksheet workSheet, T item, List<Core.Domain.Grid.GridColumn> columns, GridRequestModel objGrid, int rowIndex)
         {
-            var propInfoList = item.GetType().GetProperties();
             int colIndex = 1;
+            Type itemType = item.GetType();
+            bool isDictionary = typeof(IDictionary<string, object>).IsAssignableFrom(itemType);
 
-            foreach (var column in columns)
+            if (isDictionary && item is IDictionary<string, object> dict)
             {
-                if (!column.Name.Equals("Action", StringComparison.OrdinalIgnoreCase) && propInfoList.Any(x => string.Equals(x.Name, column.Data, StringComparison.OrdinalIgnoreCase)))
+                foreach (var column in columns)
                 {
+                    if (column.Name.Equals("Action", StringComparison.OrdinalIgnoreCase)) continue;
+
+                    if (dict.ContainsKey(column.Data))
+                    {
+                        AddCellValueFromDictionary(workSheet, column.Data, dict[column.Data], objGrid, rowIndex, colIndex++);
+                    }
+                }
+            }
+            else
+            {
+                var propInfoList = item.GetType().GetProperties();
+                foreach (var column in columns)
+                {
+                    if (column.Name.Equals("Action", StringComparison.OrdinalIgnoreCase)) continue;
+
                     var propInfo = propInfoList.FirstOrDefault(x => string.Equals(x.Name, column.Data, StringComparison.OrdinalIgnoreCase));
                     if (propInfo != null)
                     {
@@ -331,7 +381,6 @@ namespace TheTecniQ.API.Infrastructure.Extensions
                 }
             }
         }
-
         private static void MobilePopulateRow<T>(IXLWorksheet workSheet, T item, List<Core.Domain.Grid.GridColumn> columns, MobileGridRequestModel objGrid, int rowIndex)
         {
             var propInfoList = item.GetType().GetProperties();
@@ -425,7 +474,40 @@ namespace TheTecniQ.API.Infrastructure.Extensions
                 workSheet.Cell(rowIndex, colIndex).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
             }
         }
+        private static void AddCellValueFromDictionary(IXLWorksheet workSheet, string columnName, object value, GridRequestModel objGrid, int rowIndex, int colIndex)
+        {
+            if (value != null)
+            {
+                if (value is DateTime dt)
+                {
+                    dt = dt.AddHours(5).AddMinutes(30); // Apply timezone
+                    workSheet.Cell(rowIndex, colIndex).Style.NumberFormat.Format = "dd MMM yyyy h:mm tt";
+                    if (columnName == "AttendanceDate" || columnName == "ExpenseDate")
+                        workSheet.Cell(rowIndex, colIndex).Value = dt.ToString("MMM-yyyy");
+                    else
+                        workSheet.Cell(rowIndex, colIndex).Value = dt.ToString("dd MMM yyyy h:mm tt");
+                }
+                else if (value is TimeSpan ts)
+                {
+                    workSheet.Cell(rowIndex, colIndex).Style.NumberFormat.Format = "h:mm";
+                    workSheet.Cell(rowIndex, colIndex).Value = ts.ToString("h\\:mm");
+                }
+                else if (value is decimal || value is double || value is float)
+                {
+                    workSheet.Cell(rowIndex, colIndex).Value = string.Format("{0:0.##}", value);
+                }
+                else if (value is bool b)
+                {
+                    workSheet.Cell(rowIndex, colIndex).Value = b ? "Yes" : "No";
+                }
+                else
+                {
+                    workSheet.Cell(rowIndex, colIndex).Value = value.ToString();
+                }
 
+                workSheet.Cell(rowIndex, colIndex).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            }
+        }
         private static DateTime GetDateTimeValue(PropertyInfo propInfo, object item, AuditLogAttribute auditProps, GridRequestModel objGrid)
         {
             DateTime dateTimeValue = Convert.ToDateTime(propInfo.GetValue(item));

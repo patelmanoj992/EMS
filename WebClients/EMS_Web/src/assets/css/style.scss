@@ -6874,3 +6874,7 @@ ol.import-error {
 span.p-badge.p-component.p-badge-danger.custom-badge {
     border-radius: 6px;
 }
+.rpt-grid .p-datatable-table .p-datatable-tbody tr:last-child td {
+    font-weight: bold !important;
+    background: rgb(245, 245, 245);
+}

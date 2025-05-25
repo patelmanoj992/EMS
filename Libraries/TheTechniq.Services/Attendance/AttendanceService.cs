@@ -154,11 +154,6 @@ namespace TheTecniQ.Services.Attendance
                         employeeId.Add(item.EmployeeID);
                     }
                 }
-                else
-                {
-                    employeeId = new List<int>();
-                    employeeId.Add(0);
-                }
                 objGrid.Filters.Remove(findEnrollFil);
             }
             IQueryable<EMS_tblEmployeeAttendance> query = from u in _EmployeeAttendanceRepository.Table

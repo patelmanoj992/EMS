@@ -34,12 +34,12 @@
                             <i class="fas fa-store"></i> Department summary                </a>
                     </router-link>
                 </li>
-                <!-- <li class="nav-item" role="presentation" v-if="AuthService.CheckPermissionsPageWise(moduleName, 'DesignationWiseSummaryRpt')">
+                <li class="nav-item" role="presentation" v-if="AuthService.CheckPermissionsPageWise(moduleName, 'DesignationWiseSummaryRpt')">
                     <router-link to="/report/designation-summary" custom v-slot="{ href, route, navigate }">
                         <a :class="masterRoute.meta.name == route.name || masterRoute.meta.parentNode == route.name ? ActiveClass : InActiveClass" :href="href" @click="navigate">
                             <i class="fas fa-store"></i> DesignationWise                     </a>
                     </router-link>
-                </li>      -->
+                </li>     
                 <!-- <li class="nav-item" role="presentation">
                     <router-link to="/orders/order-report" custom v-slot="{ href, route, navigate }">
                         <a :class="masterRoute.meta.name == route.name || masterRoute.meta.parentNode == route.name ? ActiveClass : InActiveClass" :href="href" @click="navigate">
