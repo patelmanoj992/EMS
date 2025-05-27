@@ -381,35 +381,37 @@ namespace TheTecniQ.Api.Controllers.Reports
 
                     designationMonthSummary.Add(row);
                 }
-
-                // Add grand total row
-                var grandRow = new Dictionary<string, object>();
-                grandRow["Designation"] = "Grand Total";
-
-                decimal grandDays = 0;
-                decimal grandAmt = 0;
-
-                foreach (var month in months)
+                if (objGrid.ResponseType == EnumResponseType.Excel)
                 {
-                    decimal monthDays = list
-                        .Where(x => x.AttendanceDate.ToString("MMM-yy") == month)
-                        .Sum(x => x.AttendDays ?? 0);
+                    // Add grand total row
+                    var grandRow = new Dictionary<string, object>();
+                    grandRow["Designation"] = "Grand Total";
 
-                    decimal monthAmt = list
-                        .Where(x => x.AttendanceDate.ToString("MMM-yy") == month)
-                        .Sum(x => x.TotalAmount ?? 0);
+                    decimal grandDays = 0;
+                    decimal grandAmt = 0;
 
-                    grandRow[$"{month}_Days"] = monthDays;
-                    grandRow[$"{month}_Amt"] = monthAmt;
+                    foreach (var month in months)
+                    {
+                        decimal monthDays = list
+                            .Where(x => x.AttendanceDate.ToString("MMM-yy") == month)
+                            .Sum(x => x.AttendDays ?? 0);
 
-                    grandDays += monthDays;
-                    grandAmt += monthAmt;
+                        decimal monthAmt = list
+                            .Where(x => x.AttendanceDate.ToString("MMM-yy") == month)
+                            .Sum(x => x.TotalAmount ?? 0);
+
+                        grandRow[$"{month}_Days"] = monthDays;
+                        grandRow[$"{month}_Amt"] = monthAmt;
+
+                        grandDays += monthDays;
+                        grandAmt += monthAmt;
+                    }
+
+                    grandRow["TotalDays"] = grandDays;
+                    grandRow["TotalAmount"] = grandAmt;
+
+                    designationMonthSummary.Add(grandRow);
                 }
-
-                grandRow["TotalDays"] = grandDays;
-                grandRow["TotalAmount"] = grandAmt;
-
-                designationMonthSummary.Add(grandRow);
             }
 
             if (objGrid.ResponseType == EnumResponseType.JSON)
@@ -422,9 +424,10 @@ namespace TheTecniQ.Api.Controllers.Reports
             }
             else
             {
-                objGrid.Filename = "MonthwiseDesignationSummary";
+
+                objGrid.Filename = "DesignationWiseSummaryRpt";
                 IPagedList<dynamic> data = new PagedList<dynamic>(designationMonthSummary, 0, 0, 0);
-                return Ok(data.ToListResponse(objGrid, "Monthwise Designation Summary Report", "MonthwiseDesignationSummary"));
+                return Ok(data.ToListResponse(objGrid, "Monthwise Designation Summary Report", "DesignationWiseSummaryRpt"));
             }
 
         }

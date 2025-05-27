@@ -19,6 +19,7 @@ namespace TheTecniQ.Core.Domain.Grid
         public List<SearchGrid> Filters { get; set; }
         public EnumResponseType ResponseType { get; set; }
         public List<GridColumn> Columns { get; set; }
+        public List<string> Months { get; set; }
         public string Timezone { get; set; }
         public GridRequestModel()
         {

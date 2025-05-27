@@ -30,6 +30,7 @@ using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
 using QuestPDF.Helpers;
 using IContainer = QuestPDF.Infrastructure.IContainer;
+using Azure.Core;
 
 namespace TheTecniQ.API.Infrastructure.Extensions
 {
@@ -213,6 +214,13 @@ namespace TheTecniQ.API.Infrastructure.Extensions
 
         private static Stream ExportToExcel<T>(IPagedList<T> list, List<Core.Domain.Grid.GridColumn> columns, GridRequestModel objGrid, string sheetName = "Sheet 1")
         {
+
+            if (objGrid.Filename == "DesignationWiseSummaryRpt")
+            {
+                var dynamicList = list.Select(item => (dynamic)item).ToList();
+                return Export_DesignationWiseSummaryRpt(new XLWorkbook(), dynamicList, objGrid.Months);
+            }
+
             int rowIndex = 1;
             using var excel = new XLWorkbook();
             var workSheet = excel.Worksheets.Add(sheetName);
@@ -529,6 +537,57 @@ namespace TheTecniQ.API.Infrastructure.Extensions
             TimeSpan timeSpanValue = Convert.ToDateTime(propInfo.GetValue(item).ToString()).TimeOfDay;
             return auditProps?.IsIgnoreTimeZone == true ? timeSpanValue : Convert.ToDateTime(timeSpanValue).ToLocalDateTime(objGrid.Timezone).TimeOfDay;
         }
+        public static Stream Export_DesignationWiseSummaryRpt(XLWorkbook excel, List<dynamic> data, List<string> months)
+        {
+            var worksheet = excel.Worksheets.Add("Summary");
+            int row = 1, col = 1;
+            
+
+            worksheet.Cell(row, col++).Value = "Designation";
+
+            foreach (var month in months)
+            {
+                worksheet.Cell(row, col++).Value = $"{month}_Days";
+                worksheet.Cell(row, col++).Value = $"{month}_Amt";
+            }
+
+            worksheet.Cell(row, col++).Value = "Total Days";
+            worksheet.Cell(row, col++).Value = "Total Amount";
+
+
+            worksheet.Row(1).Style.Font.Bold = true;
+            worksheet.Row(data.Count+1).Style.Font.Bold = true;
+            foreach (var item in data)
+            {
+                row++;
+                col = 1;
+                worksheet.Cell(row, col++).Value = GetPropValue(item, "Designation");
+
+                foreach (var month in months)
+                {
+                    worksheet.Cell(row, col++).Value = GetPropValue(item, $"{month}_Days");
+                    worksheet.Cell(row, col++).Value = GetPropValue(item, $"{month}_Amt");
+                }
+
+                worksheet.Cell(row, col++).Value = GetPropValue(item, "TotalDays");
+                worksheet.Cell(row, col++).Value = GetPropValue(item, "TotalAmount");
+            }
+
+            var stream = new MemoryStream();
+            excel.SaveAs(stream);
+            stream.Position = 0;
+            return stream;
+        }
+
+        private static object GetPropValue(object obj, string propName)
+        {
+            if (obj is IDictionary<string, object> dict)
+                return dict.ContainsKey(propName) ? dict[propName] : null;
+
+            var prop = obj?.GetType().GetProperty(propName);
+            return prop?.GetValue(obj, null);
+        }
+
         public static Stream SaveToStream(XLWorkbook excel)
         {
             var memoryStream = new MemoryStream();

@@ -5,17 +5,18 @@
         <common-button
           class="btn p-button-aux mr-2"
           :label="'Export to Excel'"
-          v-show="resultData.length > 0"
+          v-show="sales.length > 0"
           @click="exportData(ExportType.Excel)"
         />
       </div>
       <div class="right-part"></div>
-    </div>
+    
 
+  </div>
     <div class="custom-datatablewithoutwidth-wrapper table-responsive">
       <DataTable
         ref="dt"
-        :value="resultData"
+        :value="sales"
         :paginator="true"
         class="p-datatable-customers"
         filterDisplay="menu"
@@ -28,52 +29,84 @@
         showGridlines
         :rows="15"
       >
-        <!-- MULTI-LEVEL HEADER -->
-        <template #header>
-    <ColumnGroup>
-       <Row>
-              <th rowspan="2">Designation</th>
-              <th
-                v-for="group in groupedColumns"
-                :key="group.group"
-                :colspan="group.children.length"
-                class="text-center"
-              >
-                {{ group.group }}
-              </th>
-            </Row>
+    <!-- Dynamic Header -->
+    <ColumnGroup type="header">
+      <Row>
+        <Column header="Designation" :rowspan="2" />
+        <template v-for="month in months" :key="month">
+          <Column :header="month" :colspan="2" class="text-center" />
+        </template>
+        <Column header="Total Sum Of Attend Days" :rowspan="2" class="text-center"/>
+        <Column header="Total Sum Of Total Amount" :rowspan="2" class="text-center"/>
+      </Row>
+      <Row>
+        <template v-for="month in months" :key="month + '-fields'">
+          <Column header="Days" class="text-center"/>
+          <Column header="Amount" class="text-center"/>
+        </template>
+      </Row>
     </ColumnGroup>
-  </template>
 
-  <Column field="Designation" header="Designation" />
+    <!-- Table Body -->
+    <Column field="Designation" header="Designation" />
 
-  <template v-for="group in groupedColumns" :key="group.group + '-cols'">
-    <Column
-      v-for="child in group.children"
-      :key="child.field"
-      :field="child.field"
-      :header="child.header"
-      class="text-center"
-      :body="formatCell(child.field)"
-      :footer="formatFooter(child.field)"
-      footerStyle="font-weight: bold; background: #f5f5f5"
-    />
-  </template>
+    <template v-for="month in months" :key="month + '-body'">
+      <Column :field="`${month}_Days`" class="text-right">
+        <template #body="slotProps">
+          {{ slotProps.data[`${month}_Days`] }}
+        </template>
+      </Column>
+      <Column :field="`${month}_Amt`" class="text-right">
+        <template #body="slotProps">
+          {{ formatCurrency(slotProps.data[`${month}_Amt`]) }}
+        </template>
+      </Column>
+    </template>
 
-        <!-- Empty Template -->
-        <template #empty>
+    <Column field="TotalDays" class="text-right">
+      <template #body="slotProps">
+        {{ slotProps.data.TotalDays }}
+      </template>
+    </Column>
+
+    <Column field="TotalAmount" class="text-right">
+      <template #body="slotProps">
+        {{ formatCurrency(slotProps.data.TotalAmount) }}
+      </template>
+    </Column>
+
+    <!-- Footer Totals -->
+    <ColumnGroup type="footer">
+      <Row>
+        <Column footer="Grand Totals:" :colspan="1" footerStyle="text-align:right" />
+        <template v-for="month in months" :key="month + '-footer'">
+          <Column :footer="monthDaysTotalMap[month]" class="text-right"/>
+          <Column :footer="formatCurrency(monthAmountTotalMap[month])" class="text-right"/>
+        </template>
+        <Column :footer="grandTotalDays" class="text-right"/>
+        <Column :footer="formatCurrency(grandTotalAmount)" class="text-right"/>
+      </Row>
+    </ColumnGroup>
+     <template #empty>
           <div class="no-data">
             <img src="@/assets/images/no-items.png" alt="No Data Found" />
             <h4>No Record Found</h4>
           </div>
         </template>
-      </DataTable>
-    </div>
+  </DataTable>
+  </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from 'vue';
+
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import ColumnGroup from 'primevue/columngroup';
+import Row from 'primevue/row';
+
+
 import commonModule from "@/composables/modules/commonModule";
 import UrlConstants from "@/utils/urlconstants";
 import { ExportType } from "@/models/controls/Grid/gridRequest";
@@ -81,6 +114,89 @@ import GridConfig from "@/models/controls/Grid/gridConfig";
 import moment from "moment";
 
 const { PatchData, PostData, ExportData } = new commonModule();
+
+interface SalesData {
+  Designation: string;
+  [key: string]: any;
+}
+const response = ref<SalesData[]>([]);
+
+
+
+const months = ref<string[]>([]); // Dynamic month names like "Feb-25", "Mar-25"
+const sales = ref<SalesData[]>([]);
+
+// Extract month names from keys
+function extractMonths(data: SalesData[]) {
+  const keys = Object.keys(data[0]);
+  const monthSet = new Set<string>();
+  keys.forEach(key => {
+    if (key.endsWith('_Days')) {
+      const month = key.replace('_Days', '');
+      monthSet.add(month);
+    }
+  });
+  return Array.from(monthSet);
+}
+
+// Add TotalDays & TotalAmount to each row
+function calculateTotals(data: SalesData[], months: string[]) {
+  return data.map(row => {
+    let totalDays = 0;
+    let totalAmount = 0;
+    months.forEach(month => {
+      totalDays += row[`${month}_Days`] || 0;
+      totalAmount += row[`${month}_Amt`] || 0;
+    });
+    return {
+      ...row,
+      TotalDays: totalDays,
+      TotalAmount: totalAmount,
+    };
+  });
+}
+
+// Month-wise totals
+const monthDaysTotalMap = computed(() => {
+  const totals: Record<string, number> = {};
+  months.value.forEach(month => {
+    totals[month] = sales.value.reduce((sum, row) => sum + (row[`${month}_Days`] || 0), 0);
+  });
+  return totals;
+});
+
+const monthAmountTotalMap = computed(() => {
+  const totals: Record<string, number> = {};
+  months.value.forEach(month => {
+    totals[month] = sales.value.reduce((sum, row) => sum + (row[`${month}_Amt`] || 0), 0);
+  });
+  return totals;
+});
+
+// Grand Totals
+const grandTotalDays = computed(() =>
+  sales.value.reduce((sum, row) => sum + (row.TotalDays || 0), 0)
+);
+const grandTotalAmount = computed(() =>
+  sales.value.reduce((sum, row) => sum + (row.TotalAmount || 0), 0)
+);
+
+// Format Currency
+function formatCurrency(val: number): string {
+  return val?.toLocaleString('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0
+  }) || '';
+}
+
+// Init
+onMounted(async () => {
+  await loadData();
+
+  // months.value = extractMonths(response.value);
+  // sales.value = calculateTotals(response.value, months.value);
+});
 
 const dt = ref(null);
 const resultData = ref([]);
@@ -100,10 +216,6 @@ const gridConfig = ref({
   doubleClickHander: null,
 } as GridConfig);
 
-// Load data
-onMounted(async () => {
-  await loadData();
-});
 
 const loadData = async () => {
   PostData(
@@ -112,51 +224,22 @@ const loadData = async () => {
     "",
     (response: any) => {
         debugger
-      const allRows = response;
-      footerRow.value = allRows.find((row: any) => row.Designation === "Grand Total") || {};
-      resultData.value = allRows.filter((row: any) => row.Designation !== "Grand Total");
-
-      // Extract month keys like "Feb-25_Days", "Feb-25_Amt"
-      const keys = Object.keys(resultData.value[0] || {}).filter(k => k !== "Designation");
-
-      const monthGroups: Record<string, { field: string, header: string }[]> = {};
-
-      keys.forEach(key => {
-        const [month, type] = key.split("_");
-        if (!monthGroups[month]) monthGroups[month] = [];
-        monthGroups[month].push({ field: key, header: type === "Days" ? "Days" : "Amount" });
-      });
-
-      // Convert to array for rendering
-      groupedColumns.value = Object.entries(monthGroups).map(([group, children]) => ({
-        group,
-        children
-      }));
-    }
+      response.value = response;
+      months.value = extractMonths(response.value);
+  sales.value = calculateTotals(response.value, months.value);
+    },null
   );
 };
 
-// Format cell values
-const formatCell = (field: string) => {
-  return (rowData: any) => {
-    const value = rowData[field];
-    return typeof value === "number" ? value.toLocaleString("en-IN") : value;
-  };
-};
 
-// Format footer values
-const formatFooter = (field: string) => {
-  const value = footerRow.value[field];
-  return typeof value === "number" ? value.toLocaleString("en-IN") : value;
-};
 
 // Export logic
 const exportData = (exportType: any) => {
   const postData: any = {
     ResponseType: exportType,
     Columns: [],
+    Months: months.value
   };
-
   groupedColumns.value.forEach(group => {
     group.children.forEach(child => {
       postData.Columns.push({
@@ -165,7 +248,6 @@ const exportData = (exportType: any) => {
       });
     });
   });
-
   ExportData(
     UrlConstants.apiGetDesignationWiseSummaryRpt,
     postData,
