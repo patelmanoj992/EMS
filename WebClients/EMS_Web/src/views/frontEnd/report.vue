@@ -22,12 +22,12 @@
                             <i class="fas fa-store"></i> Monthwise summary                   </a>
                     </router-link>
                 </li>
-                <!-- <li class="nav-item" role="presentation" v-if="AuthService.CheckPermissionsPageWise(moduleName, 'DivisionWiseSummaryRpt')">
+                <li class="nav-item" role="presentation" v-if="AuthService.CheckPermissionsPageWise(moduleName, 'DivisionWiseSummaryRpt')">
                     <router-link to="/report/division-summary" custom v-slot="{ href, route, navigate }">
                         <a :class="masterRoute.meta.name == route.name || masterRoute.meta.parentNode == route.name ? ActiveClass : InActiveClass" :href="href" @click="navigate">
-                            <i class="fas fa-store"></i> DivisionWise                   </a>
+                            <i class="fas fa-store"></i> Division summary</a>
                     </router-link>
-                </li> -->
+                </li>
                 <li class="nav-item" role="presentation" v-if="AuthService.CheckPermissionsPageWise(moduleName, 'DepartmentWiseSummaryRpt')">
                     <router-link to="/report/department-summary" custom v-slot="{ href, route, navigate }">
                         <a :class="masterRoute.meta.name == route.name || masterRoute.meta.parentNode == route.name ? ActiveClass : InActiveClass" :href="href" @click="navigate">

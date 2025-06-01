@@ -27,8 +27,9 @@ namespace TheTecniQ.Api.Controllers
         [Permission]
         public async Task<ApiResponse> generateChallanNo(int divisionid, string src = null)
         {
-            var dataSet = await _packageServices.generateChallanNo("");
-            return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status200OK, "Record found.", new { ChallanNo = dataSet });
+            int dataSet = await _packageServices.generateChallanNo("");
+            string rtnchallanNO = "MT" + dataSet.ToString("D4");
+            return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status200OK, "Record found.", new { ChallanNo = rtnchallanNO });
         }
 
         [HttpGet("get-qulity/{divisionid}")]
@@ -88,7 +89,7 @@ namespace TheTecniQ.Api.Controllers
             return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status200OK, "Record found.", dataList);
         }
         [HttpGet("get-boxdetail")]
-        [Permission]
+        //[Permission]
         public async Task<ApiResponse> GetBoxDetail(string q, string l, string g, string s)
         {
             var dataSet = await _packageServices.getBoxDetail(q, l, g, s);
@@ -104,27 +105,35 @@ namespace TheTecniQ.Api.Controllers
         [HttpPost]
         [Permission]
         public async Task<ApiResponse> Post(clsPackingMaster model)
-        {            
-            if (model == null || model.clsPackingListDetails == null || model.clsPackingListDetails.Count > 0)
-                return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status400BadRequest, "Please enter at least one boxno details.");
+        {
+            if (model == null)
+                return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status400BadRequest, "Invalid request data.");
+
+            if (model.clsPackingListDetails == null || model.clsPackingListDetails.Count == 0)
+                return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status400BadRequest, "Please enter at least one boxno detail.");
+
             if (model.ItemID == null || model.ItemID <= 0)
-                return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status400BadRequest, "Please select itemname.");
-            if (!string.IsNullOrEmpty(model.PackingSlipNo))
-            { 
-                if(await _packageServices.checkPackingSlipNo(model.PackingSlipNo))
-                    return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status200OK, "Packing Slip No Already Exists.", new { Status = 1});
-            }
-            else
+                return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status400BadRequest, "Please select an item.");
+
+            if (string.IsNullOrEmpty(model.PackingSlipNo))
+                return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status400BadRequest, "Packing slip number is required.");
+
+            // Check if PackingSlipNo already exists
+            if (await _packageServices.checkPackingSlipNo(model.PackingSlipNo))
             {
-                return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status400BadRequest, "Bad Request.");
+                int challanNo = await _packageServices.generateChallanNo("");
+                model.PackingSlipNo = "MT" + challanNo.ToString("D4");
             }
+
             model.CreatedBy = CurrentUserId;
             model.CreatedDate = DateTime.Now;
-            var data = await _packageServices.InsertDetail(model);
-            if(data != null && data > 0)
-                return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status200OK, "Record Saved Successfully");
-            else
-                return APIResponseExtensions.GenerateResponse(ApiStatusCode.Status400BadRequest, "Bad Request.");
+
+            var result = await _packageServices.InsertDetail(model);
+
+            return result > 0
+                ? APIResponseExtensions.GenerateResponse(ApiStatusCode.Status200OK, "Record saved successfully.")
+                : APIResponseExtensions.GenerateResponse(ApiStatusCode.Status400BadRequest, "Failed to save record.");
+
         }
 
     }

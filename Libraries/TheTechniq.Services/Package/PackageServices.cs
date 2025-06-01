@@ -89,7 +89,7 @@ namespace TheTecniQ.Services.Package
         }
         public async Task<int> generateChallanNo(string whrcond)
         {
-            string str = "select isnull(max(CONVERT(numeric,PackingSlipAutoNo)),0) + 1 as ChallanNo from tblPackingListMaster where 1=1 " + whrcond;
+            string str = "select isnull(max(CONVERT(numeric,PackingSlipAutoNo)),0) + 1 as ChallanNo from tblPackingListMaster where 1=1 AND ISNULL(IsMobileEntry,0) = 1 " + whrcond;
             MsSqlDataProvider obj = new();
             return await obj.QueryEntityAsync<int>(str, null);
         }
@@ -150,7 +150,8 @@ namespace TheTecniQ.Services.Package
                 new DataParameter { DataType = LinqToDB.DataType.Double, Name = "@TotalCheese", Value = model.TotalCheese },
                 new DataParameter { DataType = LinqToDB.DataType.VarChar, Name = "@Remarks", Value = model.Remarks },
                 new DataParameter { DataType = LinqToDB.DataType.VarChar, Name = "@SHADENO", Value = model.SHADENO },
-                new DataParameter { DataType = LinqToDB.DataType.Int32, Name = "@DivisionID", Value = model.DivisionID }
+                new DataParameter { DataType = LinqToDB.DataType.Int32, Name = "@DivisionID", Value = model.DivisionID },
+                new DataParameter { DataType = LinqToDB.DataType.Boolean, Name = "@IsMobileEntry", Value = true }
             }.ToArray();
 
             var insertedId = await objSql.ExecuteStoredProcedureForInsertedIdAsync("SP_tblPackingListMasterInsertCustom", CommandType.StoredProcedure, false, "Inserted", parameters);
